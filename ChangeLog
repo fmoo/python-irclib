@@ -1,3 +1,9 @@
+2011-09-24  Mark Paschal <markpasc@markpasc.org>
+    * ircbot.py: Allow specifying an IP to bind to
+    * ircbot.py: Allow running bot on IPv6
+    * irclib.py: Fix irclib not parsing -l correctly
+    Thanks to Bryan Drewery for these fixes in support of PyBorg.
+
 2008-09-11  Keltus <keltus@users.sourceforge.net>
     * ircbot.py: Reverted a leftover testing fragment that broke ircbot.py
 
