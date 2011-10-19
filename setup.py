@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 setup(name="python-irclib",
-      version="%%VERSION%%",
+      version="0.4.8",
       py_modules=["irclib", "ircbot"],
       author="Joel Rosdahl",
       author_email="joel@rosdahl.net",

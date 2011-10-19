@@ -1,6 +1,6 @@
 Summary: A set of Python modules for IRC support.
 Name: python-irclib
-Version: %%VERSION%%
+Version: 0.4.8
 Release: 1
 Group: Development/Libraries
 License: LGPL
