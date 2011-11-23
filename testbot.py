@@ -94,12 +94,15 @@ class TestBot(SingleServerIRCBot):
             c.notice(nick, "Not understood: " + cmd)
 
 def main():
-    import sys
-    if len(sys.argv) != 4:
-        print "Usage: testbot <server[:port]> <channel> <nickname>"
-        sys.exit(1)
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("host_ident", help="server:port")
+    p.add_argument("channel", help="user or channel")
+    p.add_argument("nickname", help="bot nickname")
+    p.add_argument("--ssl", action="store_true", default=False)
 
-    s = sys.argv[1].split(":", 1)
+    ns = p.parse_args()
+    s = ns.host_ident.split(":", 1)
     server = s[0]
     if len(s) == 2:
         try:
@@ -109,10 +112,8 @@ def main():
             sys.exit(1)
     else:
         port = 6667
-    channel = sys.argv[2]
-    nickname = sys.argv[3]
 
-    bot = TestBot(channel, nickname, server, port)
+    bot = TestBot(ns.channel, ns.nickname, server, port, ns.ssl)
     bot.start()
 
 if __name__ == "__main__":
