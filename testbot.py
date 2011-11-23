@@ -29,8 +29,9 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
 class TestBot(SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667):
-        SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
+    def __init__(self, channel, nickname, server, port=6667, ssl=False):
+        SingleServerIRCBot.__init__(self, [(server, port, None, ssl)],
+                                    nickname, nickname)
         self.channel = channel
 
     def on_nicknameinuse(self, c, e):

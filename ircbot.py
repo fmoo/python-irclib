@@ -47,8 +47,8 @@ class SingleServerIRCBot(SimpleIRCClient):
 
         Arguments:
 
-            server_list -- A list of tuples (server, port) that
-                           defines which servers the bot should try to
+            server_list -- A list of tuples (server, port[, password[, ssl])
+                           that defines which servers the bot should try to
                            connect to.
 
             nickname -- The bot's nickname.
@@ -88,8 +88,11 @@ class SingleServerIRCBot(SimpleIRCClient):
     def _connect(self):
         """[Internal]"""
         password = None
+        ssl = False
         if len(self.server_list[0]) > 2:
             password = self.server_list[0][2]
+        if len(self.server_list[0]) > 3:
+            ssl = self.server_list[0][3]
         try:
             self.connect(self.server_list[0][0],
                          self.server_list[0][1],
@@ -97,7 +100,8 @@ class SingleServerIRCBot(SimpleIRCClient):
                          password,
                          ircname=self._realname,
                          localaddress=self._localaddress,
-                         ipv6=self._ipv6)
+                         ipv6=self._ipv6,
+                         ssl=ssl)
         except ServerConnectionError:
             pass
 
