@@ -380,7 +380,8 @@ class ServerConnection(Connection):
         self.ssl = None
 
     def connect(self, server, port, nickname, password=None, username=None,
-                ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
+                ircname=None, localaddress="", localport=0, ssl=False,
+                ipv6=False, ssl_config=None):
         """Connect/reconnect to a server.
 
         Arguments:
@@ -405,6 +406,8 @@ class ServerConnection(Connection):
 
             ipv6 -- Enable support for ipv6.
 
+            ssl_config -- additional kwargs for ssl.wrap_socket
+
         This function can be called to reconnect a closed connection.
 
         Returns the ServerConnection object.
@@ -425,6 +428,7 @@ class ServerConnection(Connection):
         self.localaddress = localaddress
         self.localport = localport
         self.localhost = socket.gethostname()
+        self.ssl_config = ssl_config or {}
         if ipv6:
             self.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         else:
@@ -433,7 +437,7 @@ class ServerConnection(Connection):
             self.socket.bind((self.localaddress, self.localport))
             self.socket.connect((self.server, self.port))
             if ssl:
-                self.ssl = ssl_.wrap_socket(self.socket)
+                self.ssl = ssl_.wrap_socket(self.socket, **self.ssl_config)
         except socket.error, x:
             self.socket.close()
             self.socket = None
@@ -1053,7 +1057,8 @@ class SimpleIRCClient:
         self.dcc_connections.remove(c)
 
     def connect(self, server, port, nickname, password=None, username=None,
-                ircname=None, localaddress="", localport=0, ssl=False, ipv6=False):
+                ircname=None, localaddress="", localport=0, ssl=False,
+                ipv6=False, ssl_config=None):
         """Connect/reconnect to a server.
 
         Arguments:
@@ -1078,11 +1083,14 @@ class SimpleIRCClient:
 
             ipv6 -- Enable support for ipv6.
 
+            ssl_config -- additional kwargs for ssl.wrap_socket
+
         This function can be called to reconnect a closed connection.
         """
         self.connection.connect(server, port, nickname,
                                 password, username, ircname,
-                                localaddress, localport, ssl, ipv6)
+                                localaddress, localport, ssl, ipv6,
+                                ssl_config)
 
     def dcc_connect(self, address, port, dcctype="chat"):
         """Connect to a DCC peer.
