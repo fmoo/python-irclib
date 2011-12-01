@@ -42,37 +42,74 @@ class SingleServerIRCBot(SimpleIRCClient):
     have operator or voice modes.  The "database" is kept in the
     self.channels attribute, which is an IRCDict of Channels.
     """
-    def __init__(self, server_list, nickname, realname, reconnection_interval=60, localaddress="", ipv6=0):
+    def __init__(self, server_list, connection_kwargs, reconnection_interval=60):
         """Constructor for SingleServerIRCBot objects.
 
         Arguments:
 
-            server_list -- A list of tuples (server, port[, password[, ssl])
-                           that defines which servers the bot should try to
-                           connect to.
+            server_list -- A list of dicts containing connection arguments.
 
-            nickname -- The bot's nickname.
-
-            realname -- The bot's realname.
+            connection_kwargs -- Dict of connection arguments.
 
             reconnection_interval -- How long the bot should wait
                                      before trying to reconnect.
 
-            dcc_connections -- A list of initiated/accepted DCC
-            connections.
+        How a connection is made:
+
+            When a connection is made the arguments from connection_kwargs are
+            used but then overridden by the arguments for the currect server.
+
+            The only requirement is that all servers need to contain server and
+            port key and connection_kwargs need to contain nickname key
+
+            Other than that you can send in anything that
+            SimpleIRCClient.connect() accept. This means that you don't have to
+            change this class if you change the arguments to
+            SimpleIRCClient.connect()
+
+        Example:
+
+            server_list = [
+                {
+                    'server': 'www.example1.com',
+                    'port': '6669',
+                },
+                {
+                    'server': 'www.example2.com',
+                    'port': '6669',
+                },
+                {
+                    'server': 'www.example3.com',
+                    'port': '6669',
+                    'ssl': False,
+                },
+            ]
+
+            connection_kwargs = {
+                'nickname': 'bot',
+                'ssl': True,
+            }
+
+            This config means that ssl will be used for example1 and 2 but not 3
+
         """
 
         SimpleIRCClient.__init__(self)
         self.channels = IRCDict()
         self.server_list = server_list
+        self.connection_kwargs = connection_kwargs
+
+        for server in self.server_list:
+            if not "server" in server or not "port" in server:
+                raise Exception("All servers need to contain a port and server")
+
+        if not "nickname" in self.connection_kwargs:
+            raise Exception("connection_kwargs need to contain a nickname")
+
         if not reconnection_interval or reconnection_interval < 0:
             reconnection_interval = 2**31
         self.reconnection_interval = reconnection_interval
 
-        self._nickname = nickname
-        self._realname = realname
-        self._localaddress = localaddress
-        self._ipv6 = ipv6
         for i in ["disconnect", "join", "kick", "mode",
                   "namreply", "nick", "part", "quit"]:
             self.connection.add_global_handler(i,
@@ -87,21 +124,13 @@ class SingleServerIRCBot(SimpleIRCClient):
 
     def _connect(self):
         """[Internal]"""
-        password = None
-        ssl = False
-        if len(self.server_list[0]) > 2:
-            password = self.server_list[0][2]
-        if len(self.server_list[0]) > 3:
-            ssl = self.server_list[0][3]
+        kwargs = dict(
+            self.connection_kwargs.items() +
+            self.server_list[0].items()
+        )
+
         try:
-            self.connect(self.server_list[0][0],
-                         self.server_list[0][1],
-                         self._nickname,
-                         password,
-                         ircname=self._realname,
-                         localaddress=self._localaddress,
-                         ipv6=self._ipv6,
-                         ssl=ssl)
+            self.connect(**kwargs)
         except ServerConnectionError:
             pass
 
